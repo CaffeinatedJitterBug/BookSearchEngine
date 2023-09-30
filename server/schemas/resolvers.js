@@ -2,10 +2,10 @@ const { User, Book } = require("../models");
 
 const resolvers = {
     Query: {
-        user: async (parent, { _id }) => {
-            const params = _id ? { _id } : {};
-            return User.find(params);
-        },
+        // user: async (parent, { _id }) => {
+        //     const params = _id ? { _id } : {};
+        //     return User.find(params);
+        // },
         me: async (parent, args, context) => {
             if (context.user) {
                 return User.findOne({ _id: context.user._id }).populate(
@@ -37,13 +37,15 @@ const resolvers = {
             const user = await User.create(args);
             return user;
         },
-        saveBook: async (parents, args) => {
-            const saved = await User.findOneAndUpdate(
-                { _id: args._id },
-                { $addToSet: { savedBooks: args.body } },
-                { new: true, runValidators: true }
-            );
-            return saved;
+        saveBook: async (parents, {input}, context) => {
+            if (context.user) {
+                const saved = await User.findOneAndUpdate(
+                    { _id: context._id },
+                    { $addToSet: { savedBooks: input } },
+                    { new: true, runValidators: true }
+                );
+                return saved;
+            }
         },
         removeBook: async (parents, { bookId }, context) => {
             if (context.user) {
@@ -62,3 +64,5 @@ const resolvers = {
         }
     },
 };
+
+module.exports = resolvers;
